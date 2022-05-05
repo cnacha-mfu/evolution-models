@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<arch:RefactorSet xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:arch="http://www.example.org/arch">
+  <source href="current.arch#/"/>
+  <parts name="sso" next="//@parts.1">
+    <reference href="sso.arch#/"/>
+    <functions name="func1" exprText="[]  (RequestTracker.sso.sign -> &lt;> SSOServer.auth.tokenissued)"/>
+  </parts>
+  <parts name="sysmonitor" next="//@parts.2">
+    <reference href="sysmonitor.arch#/"/>
+    <functions name="func1" exprText="[]  (ExpenseProcessor.beat.send -> &lt;> SysMonitor.accept.ack)"/>
+  </parts>
+  <parts name="project" replaceStrcuture="true">
+    <reference href="asana.arch#/"/>
+    <functions name="func1" exprText="[]  (ExpenseProcessor.proc.accept -> &lt;> Asana.project.list)"/>
+  </parts>
+</arch:RefactorSet>

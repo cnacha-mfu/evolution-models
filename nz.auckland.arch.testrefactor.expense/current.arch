@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<arch:DesignModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:arch="http://www.example.org/arch" name="expense">
+  <component name="ExpenseProcessor" type="server,broadcaster,readendpoint,datareader,datawriter">
+    <port name="proc" role="//@connector.2/@role.1 //@connector.1/@role.0 //@connector.0/@role.0" type="response,read,write,OutboundPort,InboundPort">
+      <events name="accept"/>
+    </port>
+    <port name="list" role="//@connector.4/@role.0 //@connector.3/@role.1" type="response,read,OutboundPort,InboundPort">
+      <events name="render"/>
+    </port>
+  </component>
+  <component name="RequestTracker" type="client">
+    <port name="submit" role="//@connector.2/@role.0" type="request,OutboundPort">
+      <events name="send"/>
+    </port>
+    <port name="tlogin" role="//@connector.5/@role.0" type="request,OutboundPort">
+      <events name="sign"/>
+    </port>
+  </component>
+  <component name="ReviewerApp" type="client">
+    <port name="review" role="//@connector.3/@role.0" type="request,OutboundPort">
+      <events name="view"/>
+    </port>
+    <port name="rlogin" role="//@connector.5/@role.0" type="request,OutboundPort">
+      <events name="sign"/>
+    </port>
+  </component>
+  <component name="LDAP" type="server">
+    <port name="auth" role="//@connector.5/@role.1" type="response,InboundPort">
+      <events name="checked"/>
+    </port>
+  </component>
+  <component name="ExpenseStore" type="repository">
+    <port name="equery" role="//@connector.4/@role.1" type="access,InboundPort">
+      <events name="query"/>
+    </port>
+    <port name="estore" role="//@connector.0/@role.1" type="store,InboundPort">
+      <events name="save"/>
+    </port>
+  </component>
+  <component name="ProjectDB" type="repository">
+    <port name="pquery" role="//@connector.1/@role.1" type="access,InboundPort">
+      <events name="query"/>
+    </port>
+  </component>
+  <connector name="expensewritewire" type="WRConnector" connectortype="//@archstyle.6/@connectortype.0">
+    <role name="writer" roletype="//@archstyle.6/@connectortype.0/@roletype.0" type="out" connector="//@connector.0"/>
+    <role name="writestorage" roletype="//@archstyle.6/@connectortype.0/@roletype.1" type="in" connector="//@connector.0"/>
+  </connector>
+  <connector name="projectquerywire" type="REConnector" connectortype="//@archstyle.5/@connectortype.0">
+    <role name="reader" roletype="//@archstyle.5/@connectortype.0/@roletype.0" type="out" nextRoleExpr="//@connector.0/@role.0" connector="//@connector.1"/>
+    <role name="readstorage" roletype="//@archstyle.5/@connectortype.0/@roletype.1" type="in" connector="//@connector.1"/>
+  </connector>
+  <connector name="expensewire" type="CSConnector" connectortype="//@archstyle.0/@connectortype.0">
+    <role name="requester" roletype="//@archstyle.0/@connectortype.0/@roletype.0" type="out" connector="//@connector.2"/>
+    <role name="responder" roletype="//@archstyle.0/@connectortype.0/@roletype.1" type="in" nextRoleExpr="//@connector.1/@role.0" connector="//@connector.2"/>
+  </connector>
+  <connector name="approvewire" type="CSConnector" connectortype="//@archstyle.0/@connectortype.0">
+    <role name="requester" roletype="//@archstyle.0/@connectortype.0/@roletype.0" type="out" connector="//@connector.3"/>
+    <role name="responder" roletype="//@archstyle.0/@connectortype.0/@roletype.1" type="in" nextRoleExpr="//@connector.4/@role.0" connector="//@connector.3"/>
+  </connector>
+  <connector name="listexpensewire" type="REConnector" connectortype="//@archstyle.5/@connectortype.0">
+    <role name="reader" roletype="//@archstyle.5/@connectortype.0/@roletype.0" type="out" connector="//@connector.4"/>
+    <role name="readstorage" roletype="//@archstyle.5/@connectortype.0/@roletype.1" type="in" connector="//@connector.4"/>
+  </connector>
+  <connector name="authwire" type="CSConnector" connectortype="//@archstyle.0/@connectortype.0">
+    <role name="requester" roletype="//@archstyle.0/@connectortype.0/@roletype.0" type="out" connector="//@connector.5"/>
+    <role name="responder" roletype="//@archstyle.0/@connectortype.0/@roletype.1" type="in" connector="//@connector.5"/>
+  </connector>
+  <archstyle name="client-server">
+    <connectortype name="CSConnector">
+      <roletype name="requester" porttype="//@archstyle.0/@componenttype.0/@porttype.0">
+        <event name="process" next="//@archstyle.0/@connectortype.0/@roletype.0/@event.1"/>
+        <event xsi:type="arch:Channel" name="req" next="//@archstyle.0/@connectortype.0/@roletype.0/@event.2" type="output" bind="//@archstyle.0/@connectortype.0/@roletype.1/@event.0"/>
+        <event xsi:type="arch:Channel" name="res" next="//@archstyle.0/@connectortype.0/@roletype.0/@event.3" type="input"/>
+        <event name="Skip"/>
+      </roletype>
+      <roletype name="responder" porttype="//@archstyle.0/@componenttype.1/@porttype.0">
+        <event xsi:type="arch:Channel" name="req" next="//@archstyle.0/@connectortype.0/@roletype.1/@event.1" type="input"/>
+        <event name="invoke" next="//@archstyle.0/@connectortype.0/@roletype.1/@event.2"/>
+        <event name="process" next="//@archstyle.0/@connectortype.0/@roletype.1/@event.3"/>
+        <event xsi:type="arch:Channel" name="res" type="output" bind="//@archstyle.0/@connectortype.0/@roletype.0/@event.2"/>
+      </roletype>
+    </connectortype>
+    <componenttype name="client">
+      <porttype name="request"/>
+    </componenttype>
+    <componenttype name="server">
+      <porttype name="response"/>
+    </componenttype>
+  </archstyle>
+  <archstyle name="publish-subscribe">
+    <connectortype name="PSConnector" eaConnector="//@archstyle.0/@connectortype.0">
+      <roletype name="publisher" porttype="//@archstyle.1/@componenttype.0/@porttype.0">
+        <event name="process" next="//@archstyle.1/@connectortype.0/@roletype.0/@event.1"/>
+        <event xsi:type="arch:Channel" name="pub" next="//@archstyle.1/@connectortype.0/@roletype.0/@event.2" type="output" bind="//@archstyle.1/@connectortype.0/@roletype.1/@event.0"/>
+        <event name="Skip"/>
+      </roletype>
+      <roletype name="subscriber" porttype="//@archstyle.1/@componenttype.1/@porttype.0">
+        <event xsi:type="arch:Channel" name="pub" next="//@archstyle.1/@connectortype.0/@roletype.1/@event.1" type="input"/>
+        <event name="process"/>
+      </roletype>
+    </connectortype>
+    <componenttype name="broadcaster">
+      <porttype name="broadcast"/>
+    </componenttype>
+    <componenttype name="listener">
+      <porttype name="listen"/>
+    </componenttype>
+  </archstyle>
+  <archstyle name="event-sourcing">
+    <connectortype name="ESConnector">
+      <roletype name="eventpublisher" porttype="//@archstyle.2/@componenttype.0/@porttype.0">
+        <event name="process" next="//@archstyle.2/@connectortype.0/@roletype.0/@event.1"/>
+        <event xsi:type="arch:Channel" name="pevt" next="//@archstyle.2/@connectortype.0/@roletype.0/@event.2" type="output" bind="//@archstyle.2/@connectortype.0/@roletype.2/@event.0"/>
+        <event xsi:type="arch:Channel" name="sevt" next="//@archstyle.2/@connectortype.0/@roletype.0/@event.4" type="input"/>
+        <event xsi:type="arch:Channel" name="bevt" next="//@archstyle.2/@connectortype.0/@roletype.0/@event.5" type="output" bind="//@archstyle.2/@connectortype.0/@roletype.1/@event.0"/>
+        <event name="broadcast" next="//@archstyle.2/@connectortype.0/@roletype.0/@event.3"/>
+        <event name="Skip"/>
+      </roletype>
+      <roletype name="eventsubscriber" porttype="//@archstyle.2/@componenttype.1/@porttype.0">
+        <event xsi:type="arch:Channel" name="bevt" next="//@archstyle.2/@connectortype.0/@roletype.1/@event.1" type="input"/>
+        <event name="process"/>
+      </roletype>
+      <roletype name="eventstore" porttype="//@archstyle.2/@componenttype.2/@porttype.0">
+        <event xsi:type="arch:Channel" name="pevt" next="//@archstyle.2/@connectortype.0/@roletype.2/@event.1" type="input"/>
+        <event name="process" next="//@archstyle.2/@connectortype.0/@roletype.2/@event.3"/>
+        <event xsi:type="arch:Channel" name="sevt" type="output" bind="//@archstyle.2/@connectortype.0/@roletype.0/@event.2"/>
+        <event name="persist" next="//@archstyle.2/@connectortype.0/@roletype.2/@event.2"/>
+      </roletype>
+    </connectortype>
+    <componenttype name="eventsource">
+      <porttype name="publish"/>
+    </componenttype>
+    <componenttype name="eventconsumer">
+      <porttype name="listen"/>
+    </componenttype>
+    <componenttype name="eventlogger">
+      <porttype name="log"/>
+    </componenttype>
+  </archstyle>
+  <archstyle name="command-responsibility">
+    <connectortype name="CRConnector">
+      <roletype name="readstore" porttype="//@archstyle.3/@componenttype.1/@porttype.0">
+        <event xsi:type="arch:Channel" name="stmt" next="//@archstyle.3/@connectortype.0/@roletype.0/@event.1" type="input"/>
+        <event name="process" next="//@archstyle.3/@connectortype.0/@roletype.0/@event.2"/>
+        <event name="persist"/>
+      </roletype>
+      <roletype name="commander" porttype="//@archstyle.3/@componenttype.0/@porttype.0">
+        <event name="process" next="//@archstyle.3/@connectortype.0/@roletype.1/@event.3"/>
+        <event xsi:type="arch:Channel" name="stmt" next="//@archstyle.3/@connectortype.0/@roletype.1/@event.2" type="output" bind="//@archstyle.3/@connectortype.0/@roletype.0/@event.0"/>
+        <event name="Skip"/>
+        <event xsi:type="arch:Channel" name="cmmd" next="//@archstyle.3/@connectortype.0/@roletype.1/@event.1" type="output" bind="//@archstyle.3/@connectortype.0/@roletype.2/@event.0"/>
+      </roletype>
+      <roletype name="commandstore" porttype="//@archstyle.3/@componenttype.2/@porttype.0">
+        <event xsi:type="arch:Channel" name="cmmd" next="//@archstyle.3/@connectortype.0/@roletype.2/@event.1" type="input"/>
+        <event name="process" next="//@archstyle.3/@connectortype.0/@roletype.2/@event.2"/>
+        <event name="persist"/>
+      </roletype>
+    </connectortype>
+    <componenttype name="commandendpoint">
+      <porttype name="issue"/>
+    </componenttype>
+    <componenttype name="viewdb">
+      <porttype name="update"/>
+    </componenttype>
+    <componenttype name="commanddb">
+      <porttype name="logcommand"/>
+    </componenttype>
+  </archstyle>
+  <archstyle name="query-responsibility">
+    <connectortype name="QRConnector">
+      <roletype name="querier" porttype="//@archstyle.4/@componenttype.0/@porttype.0">
+        <event name="process" next="//@archstyle.4/@connectortype.0/@roletype.0/@event.3"/>
+        <event xsi:type="arch:Channel" name="stmt" next="//@archstyle.4/@connectortype.0/@roletype.0/@event.2" type="output" bind="//@archstyle.4/@connectortype.0/@roletype.1/@event.0"/>
+        <event xsi:type="arch:Channel" name="res" next="//@archstyle.4/@connectortype.0/@roletype.0/@event.0" type="input"/>
+        <event name="Skip"/>
+      </roletype>
+      <roletype name="readstore" porttype="//@archstyle.4/@componenttype.1/@porttype.0">
+        <event xsi:type="arch:Channel" name="stmt" next="//@archstyle.4/@connectortype.0/@roletype.1/@event.1" type="input"/>
+        <event name="process" next="//@archstyle.4/@connectortype.0/@roletype.1/@event.2"/>
+        <event xsi:type="arch:Channel" name="res" type="output" bind="//@archstyle.4/@connectortype.0/@roletype.0/@event.2"/>
+      </roletype>
+    </connectortype>
+    <componenttype name="readendpoint">
+      <porttype name="read"/>
+    </componenttype>
+    <componenttype name="viewdb">
+      <porttype name="query"/>
+    </componenttype>
+  </archstyle>
+  <archstyle name="repository-read">
+    <connectortype name="REConnector">
+      <roletype name="reader" porttype="//@archstyle.5/@componenttype.0/@porttype.0">
+        <event name="process" next="//@archstyle.5/@connectortype.0/@roletype.0/@event.1"/>
+        <event xsi:type="arch:Channel" name="req" next="//@archstyle.5/@connectortype.0/@roletype.0/@event.2" type="output" bind="//@archstyle.5/@connectortype.0/@roletype.1/@event.0"/>
+        <event xsi:type="arch:Channel" name="res" next="//@archstyle.5/@connectortype.0/@roletype.0/@event.3" type="input"/>
+        <event name="Skip"/>
+      </roletype>
+      <roletype name="readstorage" porttype="//@archstyle.5/@componenttype.1/@porttype.0">
+        <event xsi:type="arch:Channel" name="req" next="//@archstyle.5/@connectortype.0/@roletype.1/@event.1" type="input"/>
+        <event name="invoke" next="//@archstyle.5/@connectortype.0/@roletype.1/@event.2"/>
+        <event name="process" next="//@archstyle.5/@connectortype.0/@roletype.1/@event.3"/>
+        <event xsi:type="arch:Channel" name="res" type="output" bind="//@archstyle.5/@connectortype.0/@roletype.0/@event.2"/>
+      </roletype>
+    </connectortype>
+    <componenttype name="datareader">
+      <porttype name="read"/>
+    </componenttype>
+    <componenttype name="repository">
+      <porttype name="access"/>
+    </componenttype>
+  </archstyle>
+  <archstyle name="repository-write">
+    <connectortype name="WRConnector">
+      <roletype name="writer" porttype="//@archstyle.6/@componenttype.0/@porttype.0">
+        <event name="request" next="//@archstyle.6/@connectortype.0/@roletype.0/@event.1"/>
+        <event xsi:type="arch:Channel" name="req" next="//@archstyle.6/@connectortype.0/@roletype.0/@event.2" type="output" bind="//@archstyle.6/@connectortype.0/@roletype.1/@event.0"/>
+        <event xsi:type="arch:Channel" name="res" next="//@archstyle.6/@connectortype.0/@roletype.0/@event.3" type="input"/>
+        <event name="process" next="//@archstyle.6/@connectortype.0/@roletype.0/@event.4"/>
+        <event name="Skip"/>
+      </roletype>
+      <roletype name="writestorage" porttype="//@archstyle.6/@componenttype.1/@porttype.0">
+        <event xsi:type="arch:Channel" name="req" next="//@archstyle.6/@connectortype.0/@roletype.1/@event.1" type="input"/>
+        <event name="invoke" next="//@archstyle.6/@connectortype.0/@roletype.1/@event.2"/>
+        <event name="process" next="//@archstyle.6/@connectortype.0/@roletype.1/@event.3"/>
+        <event xsi:type="arch:Channel" name="res" type="output" bind="//@archstyle.6/@connectortype.0/@roletype.0/@event.2"/>
+      </roletype>
+    </connectortype>
+    <componenttype name="datawriter">
+      <porttype name="write"/>
+    </componenttype>
+    <componenttype name="repository">
+      <porttype name="store"/>
+    </componenttype>
+  </archstyle>
+  <archstyle name="oracle">
+    <connectortype name="IOConnector">
+      <roletype name="blockstorage" porttype="//@archstyle.7/@componenttype.0/@porttype.0">
+        <event xsi:type="arch:Channel" name="token" next="//@archstyle.7/@connectortype.0/@roletype.0/@event.1" type="input"/>
+        <event name="process" next="//@archstyle.7/@connectortype.0/@roletype.0/@event.2"/>
+        <event name="stored"/>
+      </roletype>
+      <roletype name="extsupplier" porttype="//@archstyle.7/@componenttype.1/@porttype.0">
+        <event name="process" next="//@archstyle.7/@connectortype.0/@roletype.1/@event.1"/>
+        <event xsi:type="arch:Channel" name="token" type="output" bind="//@archstyle.7/@connectortype.0/@roletype.0/@event.0"/>
+      </roletype>
+    </connectortype>
+    <componenttype name="blockchain">
+      <porttype name="bcstore"/>
+    </componenttype>
+    <componenttype name="oracle">
+      <porttype name="orafeed"/>
+    </componenttype>
+  </archstyle>
+  <archstyle name="reverse-oracle">
+    <connectortype name="ROConnector">
+      <roletype name="extquerier" porttype="//@archstyle.8/@componenttype.0/@porttype.0">
+        <event name="request" next="//@archstyle.8/@connectortype.0/@roletype.0/@event.1"/>
+        <event xsi:type="arch:Channel" name="uid" next="//@archstyle.8/@connectortype.0/@roletype.0/@event.2" type="output" bind="//@archstyle.8/@connectortype.0/@roletype.1/@event.0"/>
+        <event xsi:type="arch:Channel" name="res" next="//@archstyle.8/@connectortype.0/@roletype.0/@event.3" type="input"/>
+        <event name="process" next="//@archstyle.8/@connectortype.0/@roletype.0/@event.4"/>
+        <event name="Skip"/>
+      </roletype>
+      <roletype name="blocksupplier" porttype="//@archstyle.8/@componenttype.1/@porttype.0">
+        <event xsi:type="arch:Channel" name="uid" next="//@archstyle.8/@connectortype.0/@roletype.1/@event.1" type="input"/>
+        <event name="process" next="//@archstyle.8/@connectortype.0/@roletype.1/@event.2"/>
+        <event xsi:type="arch:Channel" name="res" type="output" bind="//@archstyle.8/@connectortype.0/@roletype.0/@event.2"/>
+      </roletype>
+    </connectortype>
+    <componenttype name="reverseoracle">
+      <porttype name="blockquery"/>
+    </componenttype>
+    <componenttype name="blockchain">
+      <porttype name="blocksupply"/>
+    </componenttype>
+  </archstyle>
+  <verifyProperty xsi:type="arch:BehaviourProperty" name="prop1" model="/" visitedStates="15" verifyTime="0.0431261" testport="//@component.1/@port.1" traceExample="init -> RequestTracker_tlogin_sign -> RequestTracker_authwire_requester_process -> authwire_req!85 -> authwire_req?85 -> LDAP_authwire_responder_invoke -> LDAP_auth_checked -> LDAP_authwire_responder_process -> authwire_res!85 -> authwire_res?85" exprText="[]  (RequestTracker.tlogin.sign -> &lt;> LDAP.auth.checked)">
+    <ltlexpr xsi:type="arch:LTLNestedExpr" operator="ALWAYS" property="//@verifyProperty.0">
+      <expr xsi:type="arch:LTLRegularExpr" event="//@component.1/@port.1/@events.0" nextExpr="//@verifyProperty.0/@ltlexpr.0/@expr.1"/>
+      <expr xsi:type="arch:LTLRegularExpr" event="//@component.3/@port.0/@events.0" operator="EVENTUALLY"/>
+    </ltlexpr>
+  </verifyProperty>
+  <verifyProperty xsi:type="arch:BehaviourProperty" name="prop2" model="/" visitedStates="15" verifyTime="0.0023851" testport="//@component.2/@port.1" traceExample="init -> ReviewerApp_rlogin_sign -> ReviewerApp_authwire_requester_process -> authwire_req!73 -> authwire_req?73 -> LDAP_authwire_responder_invoke -> LDAP_auth_checked -> LDAP_authwire_responder_process -> authwire_res!73 -> authwire_res?73" exprText="[]  (ReviewerApp.rlogin.sign -> &lt;> LDAP.auth.checked)">
+    <ltlexpr xsi:type="arch:LTLNestedExpr" operator="ALWAYS" property="//@verifyProperty.1">
+      <expr xsi:type="arch:LTLRegularExpr" event="//@component.2/@port.1/@events.0" nextExpr="//@verifyProperty.1/@ltlexpr.0/@expr.1"/>
+      <expr xsi:type="arch:LTLRegularExpr" event="//@component.3/@port.0/@events.0" operator="EVENTUALLY"/>
+    </ltlexpr>
+  </verifyProperty>
+  <verifyProperty xsi:type="arch:BehaviourProperty" name="prop3" model="/" visitedStates="39" verifyTime="0.0025510999999999997" testport="//@component.1/@port.0" traceExample="init -> RequestTracker_submit_send -> RequestTracker_expensewire_requester_process -> expensewire_req!90 -> expensewire_req?90 -> ExpenseProcessor_expensewire_responder_invoke -> ExpenseProcessor_proc_accept -> ExpenseProcessor_projectquerywire_reader_process -> projectquerywire_req!90 -> projectquerywire_req?90 -> ProjectDB_projectquerywire_readstorage_invoke -> ProjectDB_pquery_query -> ProjectDB_projectquerywire_readstorage_process -> projectquerywire_res!90 -> projectquerywire_res?90 -> ExpenseProcessor_projectquerywire_reader_Skip -> ExpenseProcessor_expensewritewire_writer_request -> expensewritewire_req!90 -> expensewritewire_req?90 -> ExpenseStore_expensewritewire_writestorage_invoke -> ExpenseStore_estore_save -> ExpenseStore_expensewritewire_writestorage_process -> expensewritewire_res!90 -> expensewritewire_res?90 -> ExpenseProcessor_expensewritewire_writer_process -> ExpenseProcessor_expensewritewire_writer_Skip -> ExpenseProcessor_expensewire_responder_process -> expensewire_res!90 -> expensewire_res?90" exprText="[]  (RequestTracker.submit.send -> &lt;> ProjectDB.pquery.query)">
+    <ltlexpr xsi:type="arch:LTLNestedExpr" operator="ALWAYS" property="//@verifyProperty.2">
+      <expr xsi:type="arch:LTLRegularExpr" event="//@component.1/@port.0/@events.0" nextExpr="//@verifyProperty.2/@ltlexpr.0/@expr.1"/>
+      <expr xsi:type="arch:LTLRegularExpr" event="//@component.5/@port.0/@events.0" operator="EVENTUALLY"/>
+    </ltlexpr>
+  </verifyProperty>
+  <verifyProperty xsi:type="arch:BehaviourProperty" name="prop4" model="/" visitedStates="43" verifyTime="0.0070339" testport="//@component.1/@port.0" traceExample="init -> RequestTracker_submit_send -> RequestTracker_expensewire_requester_process -> expensewire_req!35 -> expensewire_req?35 -> ExpenseProcessor_expensewire_responder_invoke -> ExpenseProcessor_proc_accept -> ExpenseProcessor_projectquerywire_reader_process -> projectquerywire_req!35 -> projectquerywire_req?35 -> ProjectDB_projectquerywire_readstorage_invoke -> ProjectDB_pquery_query -> ProjectDB_projectquerywire_readstorage_process -> projectquerywire_res!35 -> projectquerywire_res?35 -> ExpenseProcessor_projectquerywire_reader_Skip -> ExpenseProcessor_expensewritewire_writer_request -> expensewritewire_req!35 -> expensewritewire_req?35 -> ExpenseStore_expensewritewire_writestorage_invoke -> ExpenseStore_estore_save -> ExpenseStore_expensewritewire_writestorage_process -> expensewritewire_res!35 -> expensewritewire_res?35 -> ExpenseProcessor_expensewritewire_writer_process -> ExpenseProcessor_expensewritewire_writer_Skip -> ExpenseProcessor_expensewire_responder_process -> expensewire_res!35 -> expensewire_res?35" exprText="[]  (ExpenseProcessor.proc.accept -> &lt;> ExpenseStore.estore.save)">
+    <ltlexpr xsi:type="arch:LTLNestedExpr" operator="ALWAYS" property="//@verifyProperty.3">
+      <expr xsi:type="arch:LTLRegularExpr" event="//@component.0/@port.0/@events.0" nextExpr="//@verifyProperty.3/@ltlexpr.0/@expr.1"/>
+      <expr xsi:type="arch:LTLRegularExpr" event="//@component.4/@port.1/@events.0" operator="EVENTUALLY"/>
+    </ltlexpr>
+  </verifyProperty>
+  <verifyProperty xsi:type="arch:BehaviourProperty" name="prop5" model="/" visitedStates="24" verifyTime="0.0022616" testport="//@component.2/@port.0" traceExample="init -> ReviewerApp_review_view -> ReviewerApp_approvewire_requester_process -> approvewire_req!22 -> approvewire_req?22 -> ExpenseProcessor_approvewire_responder_invoke -> ExpenseProcessor_list_render -> ExpenseProcessor_listexpensewire_reader_process -> listexpensewire_req!22 -> listexpensewire_req?22 -> ExpenseStore_listexpensewire_readstorage_invoke -> ExpenseStore_equery_query -> ExpenseStore_listexpensewire_readstorage_process -> listexpensewire_res!22 -> listexpensewire_res?22 -> ExpenseProcessor_listexpensewire_reader_Skip -> ExpenseProcessor_approvewire_responder_process -> approvewire_res!22 -> approvewire_res?22" exprText="[]  (ExpenseProcessor.list.render -> &lt;> ExpenseStore.equery.query)">
+    <ltlexpr xsi:type="arch:LTLNestedExpr" operator="ALWAYS" property="//@verifyProperty.4">
+      <expr xsi:type="arch:LTLRegularExpr" event="//@component.0/@port.1/@events.0" nextExpr="//@verifyProperty.4/@ltlexpr.0/@expr.1"/>
+      <expr xsi:type="arch:LTLRegularExpr" event="//@component.4/@port.0/@events.0" operator="EVENTUALLY"/>
+    </ltlexpr>
+  </verifyProperty>
+</arch:DesignModel>
